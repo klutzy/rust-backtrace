@@ -1,0 +1,10 @@
+[package]
+
+name = "backtrace"
+version = "0.0.1"
+authors = ["klutzy <klutzytheklutzy@gmail.com>"]
+
+[dependencies]
+
+log = "*"
+env_logger = "*"
