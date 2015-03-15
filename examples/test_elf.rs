@@ -1,9 +1,11 @@
 extern crate backtrace;
 
+#[cfg(not(windows))]
 fn main() {
-    // TODO
-    if cfg!(windows) { return; }
     backtrace::print_traceback().unwrap();
 
     println!("ok");
 }
+
+#[cfg(windows)]
+fn main() {}

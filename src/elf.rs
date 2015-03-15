@@ -6,9 +6,8 @@
 use std::ffi::{CStr, OsStr};
 use std::os::unix::OsStrExt;
 use std::fs::File;
-use std::slice::from_raw_parts_mut;
 use std::io::{self, Seek};
-use std::mem::{uninitialized, size_of};
+use std::mem::size_of;
 
 use libc;
 
@@ -126,22 +125,6 @@ pub struct Sym {
     pub shndx: u16,
     pub value: addr,
     pub size: u64,
-}
-
-macro_rules! read_struct {
-    ($name:ident, $t:ty) => (
-        pub fn $name<R: FillExact>(reader: &mut R) -> TraceResult<$t> {
-            unsafe {
-                let mut value: $t = uninitialized();
-                {
-                    let ptr = &mut value as *mut $t as *mut u8;
-                    let buf = from_raw_parts_mut(ptr, size_of::<$t>());
-                    try!(reader.fill_exact(buf));
-                }
-                Ok(value)
-            }
-        }
-    )
 }
 
 read_struct!(read_ehdr, Ehdr);

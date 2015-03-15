@@ -37,13 +37,19 @@ use std::io::{self, Write};
 use std::mem;
 use std::str;
 
+pub mod uw;
+#[macro_use] pub mod util;
+#[cfg(not(windows))]
+pub mod elf;
+#[cfg(windows)]
+pub mod pe;
+
+#[cfg(not(windows))]
 use util::TraceResult;
+#[cfg(not(windows))]
 use elf::SymbolTable;
 
-pub mod uw;
-pub mod util;
-pub mod elf;
-
+#[cfg(not(windows))]
 struct Context<'a> {
     writer: &'a mut Write,
     depth: usize,
@@ -51,6 +57,7 @@ struct Context<'a> {
     symbol_table: SymbolTable,
 }
 
+#[cfg(not(windows))]
 pub fn print_traceback() -> TraceResult<()> {
     let mut writer = io::stderr();
     let mut cx = Context {
@@ -80,6 +87,7 @@ pub fn print_traceback() -> TraceResult<()> {
 }
 
 // some portion stolen from libstd/sys/unix/backtrace.rs
+#[cfg(not(windows))]
 extern fn trace_callback(ctx: *mut uw::_Unwind_Context,
                          arg: *mut libc::c_void) -> uw::_Unwind_Reason_Code {
     let cx: &mut Context = unsafe { mem::transmute(arg) };
@@ -125,6 +133,7 @@ extern fn trace_callback(ctx: *mut uw::_Unwind_Context,
     return uw::_URC_NO_REASON;
 }
 
+#[cfg(not(windows))]
 fn print_trace_info(cx: &mut Context, ip: usize, symaddr: usize) -> TraceResult<()> {
     if symaddr == 0 {
         return Ok(());

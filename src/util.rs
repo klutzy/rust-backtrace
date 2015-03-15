@@ -12,6 +12,7 @@ pub enum Error {
     IoError(io::Error),
     MmapError(os::MapError),
     ElfParseError,
+    PeParseError, // TODO just "FileParseError"
     Eof,
 }
 
@@ -74,6 +75,24 @@ pub trait FillExact: Read {
 }
 
 impl<R: Read> FillExact for R {}
+
+// define free function which reads packed struct.
+macro_rules! read_struct {
+    ($name:ident, $t:ty) => (
+        pub fn $name<R: FillExact>(reader: &mut R) -> TraceResult<$t> {
+            unsafe {
+                let mut value: $t = ::std::mem::uninitialized();
+                {
+                    let ptr = &mut value as *mut $t as *mut u8;
+                    let buf = ::std::slice::from_raw_parts_mut(ptr, ::std::mem::size_of::<$t>());
+                    try!(reader.fill_exact(buf));
+                }
+                Ok(value)
+            }
+        }
+    )
+}
+
 
 #[cfg(not(windows))]
 fn get_fd(file: &File) -> libc::c_int {
