@@ -376,12 +376,7 @@ impl SymbolTable {
                             if sym.size == 0 {
                                 continue;
                             }
-                            let ptr = try!(e.strtab.ptr_at(sym.name as usize));
-                            if ptr.is_null() {
-                                continue;
-                            }
-                            let name = unsafe { CStr::from_ptr(ptr as *const _) };
-                            let name = name.to_bytes();
+                            let name = try!(e.strtab.c_str_at(sym.name as usize));
                             return Ok(Some(name));
                         }
                     }

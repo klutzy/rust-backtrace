@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io::{self, Read};
 use std::mem::transmute;
 use std::os::{self, MemoryMap, MapOption};
+use std::ffi::CStr;
 use std::ptr;
 
 use libc;
@@ -118,7 +119,7 @@ impl Section {
         })
     }
 
-    pub fn ptr_at(&self, pos: usize) -> TraceResult<*const u8> {
+    pub fn c_str_at<'a>(&'a mut self, pos: usize) -> TraceResult<&'a [u8]> {
         let section_len = self.map.len() - self.align_size;
         if pos >= section_len {
             return Err(Error::Eof);
@@ -126,7 +127,9 @@ impl Section {
         let ptr = unsafe {
             (self.map.data() as *const u8).offset((self.align_size + pos) as isize)
         };
-        Ok(ptr)
+        let cstr = unsafe { CStr::from_ptr(ptr as *const _) };
+        let bytes = cstr.to_bytes();
+        Ok(bytes)
     }
 
     // TODO implement `Seek`?
